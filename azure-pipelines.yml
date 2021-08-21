@@ -1,19 +1,39 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+{
+  "builders": [{
+    "type": "azure-arm",
 
-trigger:
-- main
 
-pool:
-  vmImage: ubuntu-latest
+    "client_id": "127a4856-ee18-4520-a62b-b28302187382",
+    "client_secret": "ZS.Z._2Y27pem76jX7Hf~7xB-iTeTy1U-y",
+    "tenant_id": "d5eaa49d-e9e5-453b-a19a-852cd930bd00",
+    "subscription_id": "4029a5fe-5976-40b5-ac7b-f57c1852a3e8",
+    "managed_image_resource_group_name": "CustomImg",
+    "managed_image_name": "WINDOWS10",
+    "os_type": "Windows",
+    "image_publisher": "MicrosoftWindowsDesktop",
+    "image_offer": "office-365",
+    "image_sku": "20h2-evd-o365pp-g2",
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+    "communicator": "winrm",
+    "winrm_use_ssl": true,
+    "winrm_insecure": true,
+    "winrm_timeout": "5m",
+    "winrm_username": "packer",
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    "azure_tags": {
+        "dept": "WVDengg",
+        "task": "Image deployment"
+    },
+
+    "location": "Central US",
+    "vm_size": "Standard_D2_v4"
+  }],
+  "provisioners": [{
+    "type": "powershell",
+    "inline": [
+      "Add-WindowsFeature Web-Server",
+        "& $env:SystemRoot\\System32\\Sysprep\\Sysprep.exe /oobe /generalize /quiet /quit",
+        "while($true) { $imageState = Get-ItemProperty HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Setup\\State | Select ImageState; if($imageState.ImageState -ne 'IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE') { Write-Output $imageState.ImageState; Start-Sleep -s 10  } else { break } }"
+    ]
+  }]
+} 
